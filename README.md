@@ -119,7 +119,7 @@ if __name__ == "__main__":
    - Paste this in your terminal
 
    ```sh
-       wget -O setup_and_run.sh https://raw.githubusercontent.com/felix-detect-fix/blob/master/run_model.py
+    wget -O setup_and_run.sh https://raw.githubusercontent.com/felixoder/felix-detect-fix/master/setup_and_run.sh
    ```
 
    ```sh
