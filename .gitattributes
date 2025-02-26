@@ -1,0 +1,2 @@
+bug_detector_model/* filter=lfs diff=lfs merge=lfs -text
+bug_fixer_model/* filter=lfs diff=lfs merge=lfs -text
