@@ -5,32 +5,44 @@ import * as https from "https";
 import * as path from "path";
 
 const scriptUrl = "https://raw.githubusercontent.com/felixoder/felix-detect-fix/master/run_model.py";
-const scriptPath = path.join(__dirname, "run_model.py");
+const modelBaseUrl = "https://huggingface.co/felixoder"; // Change if needed
 
-// Download script if not already available
-function downloadScript(): Promise<void> {
+const scriptPath = path.join(__dirname, "run_model.py");
+const detectorPath = path.join(__dirname, "bug_detector_model");
+const fixerPath = path.join(__dirname, "bug_fixer_model");
+
+// Function to download a file
+function downloadFile(url: string, destination: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (fs.existsSync(scriptPath)) {
+    if (fs.existsSync(destination)) {
+      console.log(`File already exists: ${destination}`);
       resolve();
       return;
     }
 
-    console.log("Downloading run_model.py...");
-    const fileStream = fs.createWriteStream(scriptPath);
-    https.get(scriptUrl, (response) => {
+    console.log(`Downloading ${url}...`);
+    const fileStream = fs.createWriteStream(destination);
+    https.get(url, (response) => {
       response.pipe(fileStream);
       fileStream.on("finish", () => {
         fileStream.close();
-        console.log("Download complete.");
+        console.log(`Download complete: ${destination}`);
         resolve();
       });
     }).on("error", reject);
   });
 }
 
+// Download missing models and script
+async function ensureDependencies() {
+  await downloadFile(scriptUrl, scriptPath);
+  await downloadFile(`${modelBaseUrl}/bug_detector_model/resolve/main/model.safetensors`, detectorPath);
+  await downloadFile(`${modelBaseUrl}/bug_fixer_model/resolve/main/model.safetensors`, fixerPath);
+}
+
 // Function to execute the Python model
 async function runPythonModel(command: string, code: string): Promise<string> {
-  await downloadScript(); // Ensure script is downloaded
+  await ensureDependencies(); // Ensure models & script are downloaded
 
   return new Promise((resolve, reject) => {
     const safeCode = JSON.stringify(code); // Escape user input
@@ -106,3 +118,4 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
+
