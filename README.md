@@ -16,9 +16,14 @@ For example if there is an image subfolder under your extension project workspac
 
 If you have any requirements or dependencies, add a section describing those and how to install and configure them.
 
+install the model using
+```huggingface-cli download felixoder/bug_detector_model --local-dir ./bug_detector_model```
+
+```huggingface-cli download felixoder/bug_fixer_model --local-dir ./bug_fixer_model```
+
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+
 
 For example:
 
