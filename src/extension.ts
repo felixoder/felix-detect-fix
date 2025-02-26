@@ -1,18 +1,54 @@
 import * as vscode from "vscode";
 import { exec } from "child_process";
+import * as fs from "fs";
+import * as https from "https";
+import * as path from "path";
 
-function runPythonModel(command: "classify" | "fix", code: string): Promise<string> {
+const scriptUrl = "https://raw.githubusercontent.com/felixoder/felix-detect-fix/master/run_model.py";
+const scriptPath = path.join(__dirname, "run_model.py");
+
+// Download script if not already available
+function downloadScript(): Promise<void> {
   return new Promise((resolve, reject) => {
-    exec(`python3 run_model.py ${command} "${code.replace(/"/g, '\\"')}"`, (error, stdout, stderr) => {
+    if (fs.existsSync(scriptPath)) {
+      resolve();
+      return;
+    }
+
+    console.log("Downloading run_model.py...");
+    const fileStream = fs.createWriteStream(scriptPath);
+    https.get(scriptUrl, (response) => {
+      response.pipe(fileStream);
+      fileStream.on("finish", () => {
+        fileStream.close();
+        console.log("Download complete.");
+        resolve();
+      });
+    }).on("error", reject);
+  });
+}
+
+// Function to execute the Python model
+async function runPythonModel(command: string, code: string): Promise<string> {
+  await downloadScript(); // Ensure script is downloaded
+
+  return new Promise((resolve, reject) => {
+    const safeCode = JSON.stringify(code); // Escape user input
+    exec(`python3 ${scriptPath} ${command} ${safeCode}`, (error, stdout, stderr) => {
       if (error) {
-        reject(`Error: ${stderr}`);
-      } else {
-        resolve(stdout.trim());
+        reject(`Error: ${error.message}`);
+        return;
       }
+      if (stderr) {
+        reject(`stderr: ${stderr}`);
+        return;
+      }
+      resolve(stdout.trim());
     });
   });
 }
 
+// VS Code Extension Activation
 export function activate(context: vscode.ExtensionContext) {
   let detectBugCommand = vscode.commands.registerCommand("bugFixer.detectBug", async () => {
     const editor = vscode.window.activeTextEditor;
