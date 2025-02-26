@@ -1,76 +1,63 @@
-# felix-detect-fix README
+# Felix Detect & Fix - VS Code Extension
 
-This is the README for your extension "felix-detect-fix". After writing up a brief description, we recommend including the following sections.
+![Felix Detect & Fix](https://img.shields.io/badge/VS%20Code-Extension-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-## Features
+A powerful VS Code extension that detects and fixes code bugs using **machine learning**. This extension integrates with a **bug detection model** and a **bug-fixing model** hosted on Hugging Face, allowing developers to improve code quality efficiently.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## Features ✨
+- 🚀 **Detect Bugs**: Classifies code as "buggy" or "bug-free."
+- 🔧 **Fix Bugs**: Automatically suggests fixes for detected issues.
+- 💡 **Manual Control**: Users decide when to run the detection and fixing functions.
+- ⚡ **Fast & Local Processing**: Uses Hugging Face models **locally**, avoiding API calls.
 
-For example if there is an image subfolder under your extension project workspace:
+## Installation 🛠️
+1. Download and install the extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/vscode).
+2. Ensure you have **Node.js** and **VS Code** installed.
+3. Open VS Code and enable the extension.
 
-\!\[feature X\]\(images/feature-x.png\)
+## Usage 🚀
+1. **Detect Bugs**:
+   - Open a code file.
+   - Run the command: `Felix: Detect Bugs`
+   - The extension highlights buggy code sections.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+2. **Fix Bugs**:
+   - After detecting bugs, run `Felix: Fix Bugs`
+   - The model suggests code fixes.
 
-## Requirements
+## Installation from Source 🏗️
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/felixoder/felix-detect-fix.git
+   cd felix-detect-fix
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Package the extension:
+   ```sh
+   vsce package
+   ```
+4. Install the packaged `.vsix` file in VS Code.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Requirements 📦
+- VS Code **1.70+**
+- Node.js **18+**
+- Hugging Face models:
+  - [Bug Detector](https://huggingface.co/felixoder/bug_detector_model)
+  - [Bug Fixer](https://huggingface.co/felixoder/bug_fixer_model)
 
-install the model using
-```huggingface-cli download felixoder/bug_detector_model --local-dir ./bug_detector_model```
+## Contributing 🤝
+1. Fork the repo & create a new branch.
+2. Make your changes & commit.
+3. Open a Pull Request!
 
-```huggingface-cli download felixoder/bug_fixer_model --local-dir ./bug_fixer_model```
-
-## Extension Settings
-
-
-
-For example:
-
-This extension contributes the following settings:
-
-* `ctrl + shift + p`: type `Detect Bug` -> to detect bugs.
-* `ctrl + shift + p`: type `Fix Bug` -> to fix bug
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+## License 📜
+This project is licensed under the MIT License.
 
 ---
+Made with ❤️ by [Debayan Ghosh](https://github.com/felixoder).
 
-## Following extension guidelines
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
