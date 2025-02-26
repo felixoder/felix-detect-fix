@@ -2,21 +2,16 @@
 
 set -e # Exit on error
 
-# Create necessary directories
-mkdir -p bug_detector_model bug_fixer_model
+# Ensure huggingface-cli is installed
+if ! command -v huggingface-cli &>/dev/null; then
+    echo "Installing huggingface-cli..."
+    pip install --upgrade huggingface_hub
+fi
 
-# Download model files using a single curl command
-echo "Downloading models..."
-curl -L -o ./bug_detector_model/config.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/config.json" \
-    -o ./bug_detector_model/pytorch_model.bin "https://huggingface.co/felixoder/bug_detector_model/resolve/main/pytorch_model.bin" \
-    -o ./bug_detector_model/tokenizer.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/tokenizer.json" \
-    -o ./bug_detector_model/tokenizer_config.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/tokenizer_config.json" \
-    -o ./bug_detector_model/special_tokens_map.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/special_tokens_map.json" \
-    -o ./bug_fixer_model/config.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/config.json" \
-    -o ./bug_fixer_model/pytorch_model.bin "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/pytorch_model.bin" \
-    -o ./bug_fixer_model/tokenizer.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/tokenizer.json" \
-    -o ./bug_fixer_model/tokenizer_config.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/tokenizer_config.json" \
-    -o ./bug_fixer_model/special_tokens_map.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/special_tokens_map.json"
+# Create directories and download models
+echo "Downloading models using huggingface-cli..."
+huggingface-cli download felixoder/bug_detector_model --local-dir ./bug_detector_model --repo-type model
+huggingface-cli download felixoder/bug_fixer_model --local-dir ./bug_fixer_model --repo-type model
 
 echo "Models downloaded successfully."
 
@@ -24,7 +19,6 @@ echo "Models downloaded successfully."
 echo "Creating run_model.py..."
 cat >run_model.py <<'EOF'
 import sys
-
 import torch
 from transformers import (
     AutoModelForCausalLM,
@@ -86,6 +80,10 @@ def fix_buggy_code(code):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("Usage: python3 run_model.py [classify|fix] \"<code>\"")
+        sys.exit(1)
+
     command = sys.argv[1]
     code = sys.argv[2]
 
@@ -97,7 +95,7 @@ EOF
 
 echo "run_model.py created successfully."
 
-# Make sure run_model.py is executable
+# Make run_model.py executable
 chmod +x run_model.py
 
 echo "Setup complete. You can now use:"
