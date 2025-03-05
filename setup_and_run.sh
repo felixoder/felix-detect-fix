@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# The fair minumum installation script if you want you can modify this according to your usage.
+
 set -e # Exit on error
 
 # Ensure huggingface-cli is installed
@@ -13,7 +15,13 @@ echo "Downloading models using huggingface-cli..."
 huggingface-cli download felixoder/bug_detector_model --local-dir ./bug_detector_model --repo-type model
 huggingface-cli download felixoder/bug_fixer_model --local-dir ./bug_fixer_model --repo-type model
 
-echo "Models downloaded successfully."
+# installing the requirement modules
+
+pip install torch
+pip install transformers
+pip install 'accelerate>=0.26.0'
+
+echo "Models are downloaded successfully."
 
 # Create the Python script
 echo "Creating run_model.py..."
@@ -99,5 +107,14 @@ echo "run_model.py created successfully."
 chmod +x run_model.py
 
 echo "Setup complete. You can now use:"
-echo "  python3 run_model.py classify \"print('Hello World')\""
-echo "  python3 run_model.py fix \"print(Hello World)\""
+
+if command -v python &>/dev/null; then
+    PYTHON_CMD="python"
+elif command -v python3 &>/dev/null; then
+    PYTHON_CMD="python3"\else
+    echo "Python is not installed. Please install python to procees."
+    exit 1
+fi
+
+echo "  $PYTHON_CMD run_model.py classify \"print('Hello World')\""
+echo "  $PYTHON_CMD run_model.py fix \"print(Hello World)\""

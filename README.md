@@ -11,6 +11,7 @@ A powerful VS Code extension that detects and fixes code bugs using **machine le
 - 🔧 **Fix Bugs**: Automatically suggests fixes for detected issues.
 - 💡 **Manual Control**: Users decide when to run the detection and fixing functions.
 - ⚡ **Fast & Local Processing**: Uses Hugging Face models **locally**, avoiding API calls.
+- 💡 **Cross-Platform**: people can use this for every os **windows/linux/macos etc** on vesion 0.0.2.
 
 ## Installation 🛠️
 
@@ -20,11 +21,15 @@ A powerful VS Code extension that detects and fixes code bugs using **machine le
 
 ## Usage 🚀
 
-1. project structure
+````sh
+project structure
    |_ your_code.py
-   |_ bug*detector_model [download from ```huggingface-cli download felixoder/bug_detector_model --local-dir ./bug_detector_model\n```]
+   |_ bug*detector*model [download from ```huggingface-cli download felixoder/bug_detector_model --local-dir ./bug_detector_model\n```]
    |_ bug*fixer_model [download from ```huggingface-cli download felixoder/bug_fixer_model --local-dir ./bug_fixer_model```]
-   |_run_model.py [see ## run_model.py]
+   |_ run_model.py [see ## run_model.py]
+
+
+````
 
 ## run_model.py script:
 

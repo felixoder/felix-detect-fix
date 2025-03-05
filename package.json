@@ -2,7 +2,7 @@
   "name": "felix-detect-fix",
   "displayName": "felix-detect-fix",
   "description": "This is a LLM fine tune model [free] to detech and fix any bugs in your \"PYTHON\" code",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "DebayanGhosh",
   "icon": "logo.png",
   "engines": {
