@@ -108,13 +108,6 @@ chmod +x run_model.py
 
 echo "Setup complete. You can now use:"
 
-if command -v python &>/dev/null; then
-    PYTHON_CMD="python"
-elif command -v python3 &>/dev/null; then
-    PYTHON_CMD="python3"\else
-    echo "Python is not installed. Please install python to procees."
-    exit 1
-fi
 
 echo "  $PYTHON_CMD run_model.py classify \"print('Hello World')\""
 echo "  $PYTHON_CMD run_model.py fix \"print(Hello World)\""

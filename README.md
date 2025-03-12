@@ -11,7 +11,7 @@ A powerful VS Code extension that detects and fixes code bugs using **machine le
 - 🔧 **Fix Bugs**: Automatically suggests fixes for detected issues.
 - 💡 **Manual Control**: Users decide when to run the detection and fixing functions.
 - ⚡ **Fast & Local Processing**: Uses Hugging Face models **locally**, avoiding API calls.
-- 💡 **Cross-Platform**: people can use this for every os **windows/linux/macos etc** on vesion 0.0.2.
+- 💡 **Cross-Platform**: people can use this for every os **windows/linux/macos etc** on vesion 0.0.2 onwards.
 
 ## Installation 🛠️
 
