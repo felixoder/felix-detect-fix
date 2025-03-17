@@ -46,19 +46,26 @@ async function runPythonModel(command: string, code: string): Promise<string> {
 
   return new Promise((resolve, reject) => {
     const safeCode = JSON.stringify(code); // Escape user input
-    exec(`python3 ${scriptPath} ${command} ${safeCode}`, (error, stdout, stderr) => {
-      if (error) {
-        reject(`Error: ${error.message}`);
-        return;
+
+    // 🌟 Explicitly set environment variables to force CPU execution
+    exec(
+      `CUDA_VISIBLE_DEVICES=-1 TF_CPP_MIN_LOG_LEVEL=3 TF_ENABLE_ONEDNN_OPTS=0 python3 ${scriptPath} ${command} ${safeCode}`,
+      { env: { ...process.env, CUDA_VISIBLE_DEVICES: "-1", TF_CPP_MIN_LOG_LEVEL: "3", TF_ENABLE_ONEDNN_OPTS: "0" } }, 
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(`Error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          reject(`stderr: ${stderr}`);
+          return;
+        }
+        resolve(stdout.trim());
       }
-      if (stderr) {
-        reject(`stderr: ${stderr}`);
-        return;
-      }
-      resolve(stdout.trim());
-    });
+    );
   });
 }
+
 
 // VS Code Extension Activation
 export function activate(context: vscode.ExtensionContext) {
