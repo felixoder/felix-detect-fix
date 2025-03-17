@@ -1,32 +1,30 @@
 #!/bin/bash
 
-# The fair minumum installation script if you want you can modify this according to your usage.
-
 set -e # Exit on error
 
-# Ensure huggingface-cli is installed
-if ! command -v huggingface-cli &>/dev/null; then
-    echo "Installing huggingface-cli..."
-    pip install --upgrade huggingface_hub
-fi
+# Create necessary directories
+mkdir -p bug_detector_model bug_fixer_model
 
-# Create directories and download models
-echo "Downloading models using huggingface-cli..."
-huggingface-cli download felixoder/bug_detector_model --local-dir ./bug_detector_model --repo-type model
-huggingface-cli download felixoder/bug_fixer_model --local-dir ./bug_fixer_model --repo-type model
+# Download model files using a single curl command
+echo "Downloading models..."
+curl -L -o ./bug_detector_model/config.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/config.json" \
+    -o ./bug_detector_model/pytorch_model.bin "https://huggingface.co/felixoder/bug_detector_model/resolve/main/pytorch_model.bin" \
+    -o ./bug_detector_model/tokenizer.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/tokenizer.json" \
+    -o ./bug_detector_model/tokenizer_config.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/tokenizer_config.json" \
+    -o ./bug_detector_model/special_tokens_map.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/special_tokens_map.json" \
+    -o ./bug_fixer_model/config.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/config.json" \
+    -o ./bug_fixer_model/pytorch_model.bin "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/pytorch_model.bin" \
+    -o ./bug_fixer_model/tokenizer.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/tokenizer.json" \
+    -o ./bug_fixer_model/tokenizer_config.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/tokenizer_config.json" \
+    -o ./bug_fixer_model/special_tokens_map.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/special_tokens_map.json"
 
-# installing the requirement modules
-
-pip install torch
-pip install transformers
-pip install 'accelerate>=0.26.0'
-
-echo "Models are downloaded successfully."
+echo "Models downloaded successfully."
 
 # Create the Python script
 echo "Creating run_model.py..."
 cat >run_model.py <<'EOF'
 import sys
+
 import torch
 from transformers import (
     AutoModelForCausalLM,
@@ -88,10 +86,6 @@ def fix_buggy_code(code):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python3 run_model.py [classify|fix] \"<code>\"")
-        sys.exit(1)
-
     command = sys.argv[1]
     code = sys.argv[2]
 
@@ -103,11 +97,9 @@ EOF
 
 echo "run_model.py created successfully."
 
-# Make run_model.py executable
+# Make sure run_model.py is executable
 chmod +x run_model.py
 
 echo "Setup complete. You can now use:"
-
-
-echo "  $PYTHON_CMD run_model.py classify \"print('Hello World')\""
-echo "  $PYTHON_CMD run_model.py fix \"print(Hello World)\""
+echo "  python3 run_model.py classify \"print('Hello World')\""
+echo "  python3 run_model.py fix \"print(Hello World)\""
