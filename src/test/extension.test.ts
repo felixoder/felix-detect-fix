@@ -5,5 +5,4 @@ suite("Bug Detector Extension Test Suite", () => {
   vscode.window.showInformationMessage("Starting all tests...");
 
   // write the tests
-
 });

@@ -2,7 +2,7 @@
   "name": "felix-detect-fix",
   "displayName": "felix-detect-fix",
   "description": "This is a LLM fine tune model [free] to detech and fix any bugs in your \"PYTHON\" code",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "DebayanGhosh",
   "icon": "logo.png",
   "engines": {
@@ -30,7 +30,7 @@
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
-   "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
