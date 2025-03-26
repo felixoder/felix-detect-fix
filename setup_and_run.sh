@@ -1,62 +1,93 @@
 #!/bin/bash
+set -e
 
-set -e # Exit on error
+# Install required Python packages
+pip install --upgrade transformers huggingface_hub torch
 
-# Create necessary directories
-mkdir -p bug_detector_model bug_fixer_model
+echo "Setup complete. Models will be downloaded automatically on first run."
 
-# Download model files using a single curl command
-echo "Downloading models..."
-curl -L -o ./bug_detector_model/config.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/config.json" \
-    -o ./bug_detector_model/pytorch_model.bin "https://huggingface.co/felixoder/bug_detector_model/resolve/main/pytorch_model.bin" \
-    -o ./bug_detector_model/tokenizer.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/tokenizer.json" \
-    -o ./bug_detector_model/tokenizer_config.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/tokenizer_config.json" \
-    -o ./bug_detector_model/special_tokens_map.json "https://huggingface.co/felixoder/bug_detector_model/resolve/main/special_tokens_map.json" \
-    -o ./bug_fixer_model/config.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/config.json" \
-    -o ./bug_fixer_model/pytorch_model.bin "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/pytorch_model.bin" \
-    -o ./bug_fixer_model/tokenizer.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/tokenizer.json" \
-    -o ./bug_fixer_model/tokenizer_config.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/tokenizer_config.json" \
-    -o ./bug_fixer_model/special_tokens_map.json "https://huggingface.co/felixoder/bug_fixer_model/resolve/main/special_tokens_map.json"
+# Ensure huggingface-cli is installed
+if ! command -v huggingface-cli &>/dev/null; then
+    echo "Installing huggingface-cli..."
+    pip install --upgrade huggingface_hub
+fi
+
+# Create directories and download models
+echo "Downloading models using huggingface-cli..."
+huggingface-cli download felixoder/bug_detector_model --local-dir ./bug_detector_model --repo-type model
+huggingface-cli download felixoder/bug_fixer_model --local-dir ./bug_fixer_model --repo-type model
 
 echo "Models downloaded successfully."
 
 # Create the Python script
 echo "Creating run_model.py..."
 cat >run_model.py <<'EOF'
+import os
 import sys
-
 import torch
 from transformers import (
     AutoModelForCausalLM,
     AutoModelForSequenceClassification,
     AutoTokenizer,
 )
+from huggingface_hub import snapshot_download  # Add this import
 
-detector_name = "./bug_detector_model"
-fixer_name = "./bug_fixer_model"
+# Get absolute paths relative to THIS file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "models")
 
-# Automatically select the best available device (GPU > MPS > CPU)
-device = (
-    torch.device("cuda")
-    if torch.cuda.is_available()
-    else torch.device("mps")
-    if torch.backends.mps.is_available()
-    else torch.device("cpu")
-)
+# Create model directory if it doesn't exist
+os.makedirs(MODEL_DIR, exist_ok=True)
 
-# Use FP16 if on GPU, else FP32
+# Model configuration
+MODELS = {
+    "detector": {
+        "repo": "felixoder/bug_detector_model",
+        "path": os.path.join(MODEL_DIR, "detector")
+    },
+    "fixer": {
+        "repo": "felixoder/bug_fixer_model",
+        "path": os.path.join(MODEL_DIR, "fixer")
+    }
+}
+
+# Download models if missing
+for model in MODELS.values():
+    if not os.path.exists(model["path"]):
+        print(f"Downloading {model['repo']}...")
+        snapshot_download(
+            repo_id=model["repo"],
+            local_dir=model["path"],
+            local_dir_use_symlinks=False
+        )
+
+# Now load the models
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch_dtype = torch.float16 if device.type == "cuda" else torch.float32
 
-tokenizer = AutoTokenizer.from_pretrained(detector_name)
-model = AutoModelForSequenceClassification.from_pretrained(
-    detector_name, torch_dtype=torch_dtype
+# Load detector model
+detector_tokenizer = AutoTokenizer.from_pretrained(
+    MODELS["detector"]["path"],
+    local_files_only=True
+)
+detector_model = AutoModelForSequenceClassification.from_pretrained(
+    MODELS["detector"]["path"],
+    local_files_only=True,
+    torch_dtype=torch_dtype
 ).to(device)
 
-fixer_tokenizer = AutoTokenizer.from_pretrained(fixer_name)
+# Load fixer model
+fixer_tokenizer = AutoTokenizer.from_pretrained(
+    MODELS["fixer"]["path"],
+    local_files_only=True
+)
 fixer_model = AutoModelForCausalLM.from_pretrained(
-    fixer_name, torch_dtype=torch_dtype, low_cpu_mem_usage=True
+    MODELS["fixer"]["path"],
+    local_files_only=True,
+    torch_dtype=torch_dtype
 ).to(device)
 
+# Rest of your existing functions remain the same...
 
 def classify_code(code):
     inputs = tokenizer(
@@ -93,11 +124,12 @@ if __name__ == "__main__":
         print(classify_code(code))
     elif command == "fix":
         print(fix_buggy_code(code))
+
 EOF
 
 echo "run_model.py created successfully."
 
-# Make sure run_model.py is executable
+# Make run_model.py executable
 chmod +x run_model.py
 
 echo "Setup complete. You can now use:"

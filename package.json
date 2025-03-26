@@ -2,7 +2,7 @@
   "name": "felix-detect-fix",
   "displayName": "felix-detect-fix",
   "description": "This is a LLM fine tune model [free] to detech and fix any bugs in your \"PYTHON\" code",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "DebayanGhosh",
   "icon": "logo.png",
   "engines": {
@@ -11,6 +11,8 @@
   "categories": [
     "Other"
   ],
+  "extensionDependencies": ["ms-python.python"],
+  "activationEvents": ["onCommand:bugFixer.detectBug"],
   "activationEvents": [
     "onCommand:bugFixer.detectBug",
     "onCommand:bugFixer.fixBug"

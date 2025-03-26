@@ -1,37 +1,69 @@
+import os
 import sys
-
 import torch
 from transformers import (
     AutoModelForCausalLM,
     AutoModelForSequenceClassification,
     AutoTokenizer,
 )
+from huggingface_hub import snapshot_download  # Add this import
 
-detector_name = "./bug_detector_model"
-fixer_name = "./bug_fixer_model"
+# Get absolute paths relative to THIS file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "models")
 
-# Automatically select the best available device (GPU > MPS > CPU)
-device = (
-    torch.device("cuda")
-    if torch.cuda.is_available()
-    else torch.device("mps")
-    if torch.backends.mps.is_available()
-    else torch.device("cpu")
-)
+# Create model directory if it doesn't exist
+os.makedirs(MODEL_DIR, exist_ok=True)
 
-# Use FP16 if on GPU, else FP32
+# Model configuration
+MODELS = {
+    "detector": {
+        "repo": "felixoder/bug_detector_model",
+        "path": os.path.join(MODEL_DIR, "detector")
+    },
+    "fixer": {
+        "repo": "felixoder/bug_fixer_model",
+        "path": os.path.join(MODEL_DIR, "fixer")
+    }
+}
+
+# Download models if missing
+for model in MODELS.values():
+    if not os.path.exists(model["path"]):
+        print(f"Downloading {model['repo']}...")
+        snapshot_download(
+            repo_id=model["repo"],
+            local_dir=model["path"],
+            local_dir_use_symlinks=False
+        )
+
+# Now load the models
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch_dtype = torch.float16 if device.type == "cuda" else torch.float32
 
-tokenizer = AutoTokenizer.from_pretrained(detector_name)
-model = AutoModelForSequenceClassification.from_pretrained(
-    detector_name, torch_dtype=torch_dtype
+# Load detector model
+detector_tokenizer = AutoTokenizer.from_pretrained(
+    MODELS["detector"]["path"],
+    local_files_only=True
+)
+detector_model = AutoModelForSequenceClassification.from_pretrained(
+    MODELS["detector"]["path"],
+    local_files_only=True,
+    torch_dtype=torch_dtype
 ).to(device)
 
-fixer_tokenizer = AutoTokenizer.from_pretrained(fixer_name)
+# Load fixer model
+fixer_tokenizer = AutoTokenizer.from_pretrained(
+    MODELS["fixer"]["path"],
+    local_files_only=True
+)
 fixer_model = AutoModelForCausalLM.from_pretrained(
-    fixer_name, torch_dtype=torch_dtype, low_cpu_mem_usage=True
+    MODELS["fixer"]["path"],
+    local_files_only=True,
+    torch_dtype=torch_dtype
 ).to(device)
 
+# Rest of your existing functions remain the same...
 
 def classify_code(code):
     inputs = tokenizer(
