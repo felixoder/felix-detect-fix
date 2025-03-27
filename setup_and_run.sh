@@ -124,7 +124,6 @@ if __name__ == "__main__":
         print(classify_code(code))
     elif command == "fix":
         print(fix_buggy_code(code))
-
 EOF
 
 echo "run_model.py created successfully."

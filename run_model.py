@@ -1,12 +1,13 @@
 import os
 import sys
+
 import torch
+from huggingface_hub import snapshot_download  # Add this import
 from transformers import (
     AutoModelForCausalLM,
     AutoModelForSequenceClassification,
     AutoTokenizer,
 )
-from huggingface_hub import snapshot_download  # Add this import
 
 # Get absolute paths relative to THIS file
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -19,12 +20,12 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 MODELS = {
     "detector": {
         "repo": "felixoder/bug_detector_model",
-        "path": os.path.join(MODEL_DIR, "detector")
+        "path": os.path.join(MODEL_DIR, "detector"),
     },
     "fixer": {
         "repo": "felixoder/bug_fixer_model",
-        "path": os.path.join(MODEL_DIR, "fixer")
-    }
+        "path": os.path.join(MODEL_DIR, "fixer"),
+    },
 }
 
 # Download models if missing
@@ -32,9 +33,7 @@ for model in MODELS.values():
     if not os.path.exists(model["path"]):
         print(f"Downloading {model['repo']}...")
         snapshot_download(
-            repo_id=model["repo"],
-            local_dir=model["path"],
-            local_dir_use_symlinks=False
+            repo_id=model["repo"], local_dir=model["path"], local_dir_use_symlinks=False
         )
 
 # Now load the models
@@ -43,34 +42,27 @@ torch_dtype = torch.float16 if device.type == "cuda" else torch.float32
 
 # Load detector model
 detector_tokenizer = AutoTokenizer.from_pretrained(
-    MODELS["detector"]["path"],
-    local_files_only=True
+    MODELS["detector"]["path"], local_files_only=True
 )
 detector_model = AutoModelForSequenceClassification.from_pretrained(
-    MODELS["detector"]["path"],
-    local_files_only=True,
-    torch_dtype=torch_dtype
+    MODELS["detector"]["path"], local_files_only=True, torch_dtype=torch_dtype
 ).to(device)
 
 # Load fixer model
 fixer_tokenizer = AutoTokenizer.from_pretrained(
-    MODELS["fixer"]["path"],
-    local_files_only=True
+    MODELS["fixer"]["path"], local_files_only=True
 )
 fixer_model = AutoModelForCausalLM.from_pretrained(
-    MODELS["fixer"]["path"],
-    local_files_only=True,
-    torch_dtype=torch_dtype
+    MODELS["fixer"]["path"], local_files_only=True, torch_dtype=torch_dtype
 ).to(device)
 
-# Rest of your existing functions remain the same...
 
 def classify_code(code):
-    inputs = tokenizer(
+    inputs = detector_tokenizer(
         code, return_tensors="pt", padding=True, truncation=True, max_length=512
     ).to(device)
     with torch.no_grad():
-        outputs = model(**inputs)
+        outputs = detector_model(**inputs)
     predicted_label = torch.argmax(outputs.logits, dim=1).item()
     return "bug-free" if predicted_label == 0 else "buggy"
 

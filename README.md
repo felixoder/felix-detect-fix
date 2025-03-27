@@ -137,25 +137,14 @@ if __name__ == "__main__":
    ```
 
 4. **Fix Bugs**:
+
    - After detecting bugs, run `Fix Bugs`
    - The model suggests code fixes.
 
-## Installation from Source 🏗️
+5. **NEW RELEASE 1.0.4 onwards**
 
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/felixoder/felix-detect-fix.git
-   cd felix-detect-fix
-   ```
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
-3. Package the extension:
-   ```sh
-   vsce package
-   ```
-4. Install the packaged `.vsix` file in VS Code.
+   - No need to install the model from wget I have made some changes so that we can install the model in a nice way.
+   - you can run the model or try using CLI then it will detect that the model(detect || fixer) is available in model/ route. if it is it will use them otherwise it will install those and use them.
 
 ## Requirements 📦
 
